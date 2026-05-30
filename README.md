@@ -1,7 +1,8 @@
 # messenger
 
 A small full-stack chat app in Gleam: a Lustre frontend, a wisp/mist backend,
-Postgres for storage, and websockets for realtime updates.
+Postgres for storage, websockets for realtime updates, and account auth
+(argon2id passwords + bearer-token sessions).
 
 ## Layout
 
@@ -22,3 +23,12 @@ docker compose up -d
 cd server && gleam run
 cd client && gleam run -m lustre/dev start
 ```
+
+## Auth
+
+- Register/login at `/register` and `/login`; chat at `/` is gated (routing via
+  `modem`). The session token lives in `localStorage` and rides as
+  `Authorization: Bearer <token>` (and `?token=` on the websocket).
+- Passwords are argon2id (`argus`); tokens are stored in a `sessions` table.
+- Messages are authored by `user_id` (the logged-in user, not client-supplied),
+  and only the author can delete their own. `sender` is the joined username.

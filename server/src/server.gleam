@@ -23,7 +23,7 @@ pub fn main() {
 
   let handler = fn(req) {
     case request.path_segments(req) {
-      ["ws"] -> socket.handle(req, hub)
+      ["ws"] -> socket.handle(req, db, hub)
       _ -> wisp_handler(req)
     }
   }
