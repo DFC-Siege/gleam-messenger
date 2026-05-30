@@ -15,15 +15,17 @@ import shared/event.{Created, Deleted}
 import shared/message.{type Message}
 import shared/user.{type User}
 
-const me_url = "http://localhost:8000/api/me"
+const base_url = "http://localhost:8000/api/"
 
-const messages_url = "http://localhost:8000/api/messages"
+const me_url = base_url <> "me"
 
-const register_url = "http://localhost:8000/api/register"
+const messages_url = base_url <> "messages"
 
-const login_url = "http://localhost:8000/api/login"
+const register_url = base_url <> "register"
 
-const session_url = "http://localhost:8000/api/session"
+const login_url = base_url <> "login"
+
+const session_url = base_url <> "session"
 
 const ws_base = "ws://localhost:8000/ws?token="
 
@@ -114,7 +116,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     SubmittedLogin -> #(model, authenticate(login_url, model))
 
     ApiAuthed(Ok(session)) -> #(
-      Model(..model, session: Some(session), password_input: "", auth_error: None),
+      Model(
+        ..model,
+        session: Some(session),
+        password_input: "",
+        auth_error: None,
+      ),
       effect.batch([
         auth.store_token(session.token),
         modem.push(router.to_path(Chat), None, None),
@@ -129,7 +136,10 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     ApiGotMe(Ok(user)) -> {
       let token = auth.get_token()
-      #(Model(..model, session: Some(Session(token:, user:))), enter_chat(token))
+      #(
+        Model(..model, session: Some(Session(token:, user:))),
+        enter_chat(token),
+      )
     }
 
     ApiGotMe(Error(_)) -> #(Model(..model, session: None), auth.forget_token())
@@ -137,7 +147,11 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     ClickedLogout -> #(
       Model(..model, session: None, messages: [], draft: ""),
       effect.batch([
-        api.delete(session_url, token(model), rsvp.expect_ok_response(to_logged_out)),
+        api.delete(
+          session_url,
+          token(model),
+          rsvp.expect_ok_response(to_logged_out),
+        ),
         auth.forget_token(),
         modem.push(router.to_path(Login), None, None),
       ]),
