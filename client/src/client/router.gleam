@@ -4,12 +4,14 @@ pub type Route {
   Login
   Register
   Chat
+  Viewer
 }
 
 pub fn from_uri(u: Uri) -> Route {
   case uri.path_segments(u.path) {
     ["login"] -> Login
     ["register"] -> Register
+    ["viewer"] -> Viewer
     _ -> Chat
   }
 }
@@ -19,5 +21,6 @@ pub fn to_path(route: Route) -> String {
     Login -> "/login"
     Register -> "/register"
     Chat -> "/"
+    Viewer -> "/viewer"
   }
 }

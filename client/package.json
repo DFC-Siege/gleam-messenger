@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
-    "@capacitor/core": "^7.0.0"
+    "@capacitor/core": "^7.0.0",
+    "@google/model-viewer": "^4.2.0"
   }
 }

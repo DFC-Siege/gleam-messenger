@@ -3,26 +3,59 @@ import client/model.{
   SubmittedDraft, SubmittedLogin, SubmittedRegister, UpdatedDraft,
   UpdatedPassword, UpdatedUsername,
 }
-import client/router.{type Route, Register}
+import client/router.{type Route, Register, Viewer}
 import client/ui/button
 import client/ui/card
 import gleam/list
 import gleam/option.{None, Some}
-import lustre/attribute.{class, href}
-import lustre/element.{type Element}
+import lustre/attribute.{attribute, class, href}
+import lustre/element.{type Element, element}
 import lustre/element/html
 import lustre/event
 import shared/message.{type Message}
 
 pub fn page(model: Model) -> Element(Msg) {
   case model.session {
-    Some(session) -> chat(model, session)
+    Some(session) ->
+      case model.route {
+        Viewer -> viewer()
+        _ -> chat(model, session)
+      }
     None ->
       case model.route {
         Register -> auth_form(model, Register)
         _ -> auth_form(model, router.Login)
       }
   }
+}
+
+// --- 3D viewer ---
+
+fn viewer() -> Element(Msg) {
+  shell([
+    html.div([class("w-full max-w-md flex flex-col gap-4")], [
+      html.div([class("flex items-center justify-between")], [
+        html.h1([], [html.text("3D viewer")]),
+        html.a([href("/"), class("text-sm text-surface-400")], [
+          html.text("Back to chat"),
+        ]),
+      ]),
+      card.card([class("overflow-hidden p-0")], [
+        element(
+          "model-viewer",
+          [
+            attribute("src", "/model.glb"),
+            attribute("alt", "A 3D model"),
+            attribute("camera-controls", ""),
+            attribute("auto-rotate", ""),
+            attribute("ar", ""),
+            class("block w-full h-96 bg-surface-800"),
+          ],
+          [],
+        ),
+      ]),
+    ]),
+  ])
 }
 
 // --- auth pages ---
@@ -117,6 +150,9 @@ fn header(session: Session) -> Element(Msg) {
   html.div([class("flex items-center justify-between")], [
     html.h1([], [html.text("Messages")]),
     html.div([class("flex items-center gap-3")], [
+      html.a([href("/viewer"), class("text-sm text-surface-400")], [
+        html.text("3D"),
+      ]),
       html.span([class("text-sm text-surface-400")], [
         html.text(session.user.username),
       ]),
