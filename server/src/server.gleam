@@ -42,6 +42,7 @@ pub fn main() {
       handler
       |> mist.new
       |> mist.port(8000)
+      |> mist.bind("0.0.0.0")
       |> mist.supervised,
     )
     |> supervisor.start

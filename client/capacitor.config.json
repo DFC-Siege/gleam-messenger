@@ -1,0 +1,8 @@
+{
+  "appId": "nl.doetdingen.messenger",
+  "appName": "Messenger",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http"
+  }
+}

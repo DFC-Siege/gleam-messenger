@@ -1,5 +1,6 @@
 import client/api
 import client/auth
+import client/env
 import client/router.{type Route, Chat, Login}
 import client/socket
 import gleam/dynamic/decode
@@ -15,7 +16,7 @@ import shared/event.{Created, Deleted}
 import shared/message.{type Message}
 import shared/user.{type User}
 
-const base_url = "http://localhost:8000/api/"
+const base_url = env.api_base
 
 const me_url = base_url <> "me"
 
@@ -27,7 +28,7 @@ const login_url = base_url <> "login"
 
 const session_url = base_url <> "session"
 
-const ws_base = "ws://localhost:8000/ws?token="
+const ws_base = env.ws_base
 
 pub type Session {
   Session(token: String, user: User)
