@@ -1,21 +1,18 @@
 import gleam/dynamic/decode
-import gleam/erlang/process
+import gleam/erlang/process.{type Name}
 import gleam/option.{Some}
-import gleam/otp/actor
 import gleam/result
 import pog
 import shared/message.{type Message, Message}
 import shared/user.{type User, User}
 
-pub fn connect() -> Result(pog.Connection, actor.StartError) {
-  pog.default_config(pool_name: process.new_name("messenger_db"))
+pub fn config(name: Name(pog.Message)) -> pog.Config {
+  pog.default_config(pool_name: name)
   |> pog.host("localhost")
   |> pog.port(5433)
   |> pog.database("messenger")
   |> pog.user("messenger")
   |> pog.password(Some("messenger"))
-  |> pog.start
-  |> result.map(fn(started) { started.data })
 }
 
 // --- users ---

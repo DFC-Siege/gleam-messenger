@@ -1,7 +1,7 @@
-import gleam/erlang/process.{type Subject}
+import gleam/erlang/process.{type Name, type Subject}
 import gleam/list
 import gleam/otp/actor
-import gleam/result
+import gleam/otp/supervision
 import shared/event.{type Event}
 
 pub type Hub =
@@ -13,11 +13,13 @@ pub opaque type Op {
   Publish(event: Event)
 }
 
-pub fn start() -> Result(Hub, actor.StartError) {
-  actor.new([])
-  |> actor.on_message(handle)
-  |> actor.start
-  |> result.map(fn(started) { started.data })
+pub fn supervised(name: Name(Op)) -> supervision.ChildSpecification(Hub) {
+  supervision.worker(fn() {
+    actor.new([])
+    |> actor.on_message(handle)
+    |> actor.named(name)
+    |> actor.start
+  })
 }
 
 pub fn subscribe(hub: Hub, client: Subject(Event)) -> Nil {

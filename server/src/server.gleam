@@ -1,6 +1,8 @@
 import gleam/erlang/process
 import gleam/http/request
+import gleam/otp/static_supervisor as supervisor
 import mist
+import pog
 import server/db
 import server/hub
 import server/router.{Context}
@@ -11,9 +13,13 @@ import wisp/wisp_mist
 pub fn main() {
   wisp.configure_logger()
   let secret_key_base = wisp.random_string(64)
-  let assert Ok(db) = db.connect()
-  let assert Ok(hub) = hub.start()
-  let ctx = Context(db:, hub:)
+
+  let db_name = process.new_name("messenger_db")
+  let hub_name = process.new_name("messenger_hub")
+
+  let conn = pog.named_connection(db_name)
+  let broadcaster = process.named_subject(hub_name)
+  let ctx = Context(db: conn, hub: broadcaster)
 
   let wisp_handler =
     wisp_mist.handler(
@@ -23,16 +29,17 @@ pub fn main() {
 
   let handler = fn(req) {
     case request.path_segments(req) {
-      ["ws"] -> socket.handle(req, db, hub)
+      ["ws"] -> socket.handle(req, conn, broadcaster)
       _ -> wisp_handler(req)
     }
   }
 
   let assert Ok(_) =
-    handler
-    |> mist.new
-    |> mist.port(8000)
-    |> mist.start
+    supervisor.new(supervisor.OneForOne)
+    |> supervisor.add(pog.supervised(db.config(db_name)))
+    |> supervisor.add(hub.supervised(hub_name))
+    |> supervisor.add(handler |> mist.new |> mist.port(8000) |> mist.supervised)
+    |> supervisor.start
 
   process.sleep_forever()
 }
