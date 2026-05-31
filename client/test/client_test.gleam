@@ -3,11 +3,23 @@ import client/chat
 import gleam/json
 import gleam/option.{None}
 import gleeunit
+import shared/credentials
 import shared/event
 import shared/message.{Message}
 
 pub fn main() -> Nil {
   gleeunit.main()
+}
+
+pub fn credentials_valid_test() {
+  assert credentials.validate("joe", "longenough") == Ok(Nil)
+}
+
+pub fn credentials_accumulates_errors_test() {
+  let result = credentials.validate("ab", "short")
+
+  assert result
+    == Error([credentials.UsernameTooShort, credentials.PasswordTooShort])
 }
 
 pub fn auth_updated_username_test() {

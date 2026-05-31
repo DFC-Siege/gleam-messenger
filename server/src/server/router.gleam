@@ -10,6 +10,7 @@ import server/db/messages
 import server/db/sessions
 import server/db/users
 import server/hub.{type Hub}
+import shared/credentials
 import shared/event
 import shared/message
 import shared/user.{type User, to_json as user_json}
@@ -50,12 +51,22 @@ fn register(ctx: Context, req: Request) -> Response {
 
   case decode.run(body, credentials_decoder()) {
     Ok(#(username, password)) ->
-      case users.create(ctx.db, username, auth.hash_password(password)) {
-        Ok(user) -> issue_session(ctx, user, 201)
-        Error(_) -> wisp.response(409)
+      case credentials.validate(username, password) {
+        Error(errors) -> unprocessable(errors)
+        Ok(_) ->
+          case users.create(ctx.db, username, auth.hash_password(password)) {
+            Ok(user) -> issue_session(ctx, user, 201)
+            Error(_) -> wisp.response(409)
+          }
       }
     Error(_) -> wisp.bad_request("expected {username, password}")
   }
+}
+
+fn unprocessable(errors: List(credentials.Error)) -> Response {
+  json.array(errors, fn(error) { json.string(credentials.message(error)) })
+  |> json.to_string
+  |> wisp.json_response(422)
 }
 
 fn login(ctx: Context, req: Request) -> Response {

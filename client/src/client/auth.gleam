@@ -3,9 +3,12 @@ import client/auth/token
 import client/env
 import gleam/dynamic/decode
 import gleam/json
+import gleam/list
 import gleam/option.{type Option, None, Some}
+import gleam/string
 import lustre/effect.{type Effect}
 import rsvp
+import shared/credentials
 import shared/user.{type User}
 
 const base_url = env.api_base
@@ -89,7 +92,15 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg), Out) {
       Nothing,
     )
 
-    SubmittedRegister -> #(model, authenticate(register_url, model), Nothing)
+    SubmittedRegister ->
+      case credentials.validate(model.username_input, model.password_input) {
+        Error(errors) -> #(
+          Model(..model, error: Some(error_message(errors))),
+          effect.none(),
+          Nothing,
+        )
+        Ok(_) -> #(model, authenticate(register_url, model), Nothing)
+      }
 
     SubmittedLogin -> #(model, authenticate(login_url, model), Nothing)
 
@@ -123,6 +134,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg), Out) {
 
     LoggedOut(_) -> #(model, effect.none(), Nothing)
   }
+}
+
+fn error_message(errors: List(credentials.Error)) -> String {
+  errors
+  |> list.map(credentials.message)
+  |> string.join(". ")
 }
 
 fn authenticate(url: String, model: Model) -> Effect(Msg) {
