@@ -1,6 +1,6 @@
-import client/model.{
-  type Model, type Msg, type Session, ClickedDelete, ClickedLogout,
-  SubmittedDraft, UpdatedDraft,
+import client/chat.{
+  type Model, type Msg, ClickedDelete, ClickedLogout, SubmittedDraft,
+  UpdatedDraft,
 }
 import client/ui/button
 import client/ui/card
@@ -12,38 +12,37 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 import shared/message.{type Message}
+import shared/user.{type User}
 
-pub fn view(model: Model, session: Session) -> Element(Msg) {
+pub fn view(model: Model, user: User) -> Element(Msg) {
   layout.shell([
     html.div([class("w-full max-w-md flex flex-col gap-4")], [
-      header(session),
+      header(user),
       error(model),
       html.div(
         [class("flex flex-col gap-3")],
-        list.map(model.messages, bubble(_, session)),
+        list.map(model.messages, bubble(_, user)),
       ),
       composer(model),
     ]),
   ])
 }
 
-fn header(session: Session) -> Element(Msg) {
+fn header(user: User) -> Element(Msg) {
   html.div([class("flex items-center justify-between")], [
     html.h1([], [html.text("Messages")]),
     html.div([class("flex items-center gap-3")], [
       html.a([href("/viewer"), class("text-sm text-surface-400")], [
         html.text("3D"),
       ]),
-      html.span([class("text-sm text-surface-400")], [
-        html.text(session.user.username),
-      ]),
+      html.span([class("text-sm text-surface-400")], [html.text(user.username)]),
       button.ghost([event.on_click(ClickedLogout)], "Log out"),
     ]),
   ])
 }
 
-fn bubble(msg: Message, session: Session) -> Element(Msg) {
-  let actions = case msg.user_id == session.user.id {
+fn bubble(msg: Message, user: User) -> Element(Msg) {
+  let actions = case msg.user_id == user.id {
     True -> [button.danger([event.on_click(ClickedDelete(msg.id))], "Delete")]
     False -> []
   }

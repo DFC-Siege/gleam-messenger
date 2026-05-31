@@ -1,4 +1,4 @@
-import client/model.{
+import client/auth.{
   type Model, type Msg, SubmittedLogin, SubmittedRegister, UpdatedPassword,
   UpdatedUsername,
 }
@@ -64,7 +64,7 @@ fn field(
 }
 
 fn error(model: Model) -> Element(Msg) {
-  case model.auth_error {
+  case model.error {
     Some(reason) ->
       html.p([class("text-danger-400 text-sm")], [html.text(reason)])
     None -> element.none()
