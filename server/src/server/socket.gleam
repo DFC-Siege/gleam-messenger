@@ -8,7 +8,7 @@ import gleam/option.{Some}
 import gleam/result
 import mist.{type Connection, type ResponseData}
 import pog
-import server/db
+import server/db/sessions
 import server/hub.{type Hub}
 import shared/event
 
@@ -66,7 +66,7 @@ pub fn handle(
 
 fn authorized(req: Request(Connection), database: pog.Connection) -> Bool {
   case token(req) {
-    Ok(t) -> result.is_ok(db.find_user_by_token(database, t))
+    Ok(t) -> result.is_ok(sessions.find_user_by_token(database, t))
     Error(_) -> False
   }
 }

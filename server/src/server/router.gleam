@@ -6,11 +6,13 @@ import gleam/int
 import gleam/json
 import pog
 import server/auth
-import server/db
+import server/db/messages
+import server/db/sessions
+import server/db/users
 import server/hub.{type Hub}
 import shared/event
 import shared/message
-import shared/user.{type User} as users
+import shared/user.{type User, to_json as user_json}
 import wisp.{type Request, type Response}
 
 pub type Context {
@@ -48,7 +50,7 @@ fn register(ctx: Context, req: Request) -> Response {
 
   case decode.run(body, credentials_decoder()) {
     Ok(#(username, password)) ->
-      case db.create_user(ctx.db, username, auth.hash_password(password)) {
+      case users.create(ctx.db, username, auth.hash_password(password)) {
         Ok(user) -> issue_session(ctx, user, 201)
         Error(_) -> wisp.response(409)
       }
@@ -62,7 +64,7 @@ fn login(ctx: Context, req: Request) -> Response {
 
   case decode.run(body, credentials_decoder()) {
     Ok(#(username, password)) ->
-      case db.find_user_by_username(ctx.db, username) {
+      case users.find_by_username(ctx.db, username) {
         Ok(#(user, hash)) ->
           case auth.verify_password(password, hash) {
             True -> issue_session(ctx, user, 200)
@@ -79,7 +81,7 @@ fn logout(ctx: Context, req: Request) -> Response {
 
   case auth.bearer_token(req) {
     Ok(token) -> {
-      db.delete_session(ctx.db, token)
+      sessions.delete(ctx.db, token)
       wisp.response(204)
     }
     Error(_) -> wisp.response(401)
@@ -90,16 +92,16 @@ fn me(ctx: Context, req: Request) -> Response {
   use <- wisp.require_method(req, Get)
   use user <- auth.require_user(ctx.db, req)
 
-  users.to_json(user)
+  user_json(user)
   |> json.to_string
   |> wisp.json_response(200)
 }
 
 fn issue_session(ctx: Context, user: User, status: Int) -> Response {
   let token = auth.generate_token()
-  db.create_session(ctx.db, user.id, token)
+  sessions.create(ctx.db, user.id, token)
 
-  json.object([#("token", json.string(token)), #("user", users.to_json(user))])
+  json.object([#("token", json.string(token)), #("user", user_json(user))])
   |> json.to_string
   |> wisp.json_response(status)
 }
@@ -117,7 +119,7 @@ fn messages(ctx: Context, req: Request) -> Response {
 fn list_messages(ctx: Context, req: Request) -> Response {
   use _ <- auth.require_user(ctx.db, req)
 
-  json.array(db.all(ctx.db), message.to_json)
+  json.array(messages.all(ctx.db), message.to_json)
   |> json.to_string
   |> wisp.json_response(200)
 }
@@ -128,7 +130,7 @@ fn create_message(ctx: Context, req: Request) -> Response {
 
   case decode.run(body, body_decoder()) {
     Ok(text) -> {
-      let created = db.insert(ctx.db, user.id, text)
+      let created = messages.insert(ctx.db, user.id, text)
       hub.publish(ctx.hub, event.Created(created))
 
       created
@@ -146,9 +148,9 @@ fn message(ctx: Context, req: Request, id: String) -> Response {
 
   case int.parse(id) {
     Ok(id) ->
-      case db.message_author(ctx.db, id) {
+      case messages.author(ctx.db, id) {
         Ok(author_id) if author_id == user.id -> {
-          db.delete(ctx.db, id)
+          messages.delete(ctx.db, id)
           hub.publish(ctx.hub, event.Deleted(id))
           wisp.response(204)
         }

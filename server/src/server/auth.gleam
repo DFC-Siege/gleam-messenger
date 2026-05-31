@@ -5,7 +5,7 @@ import gleam/http/request
 import gleam/result
 import gleam/string
 import pog
-import server/db
+import server/db/sessions
 import shared/user.{type User}
 import wisp.{type Request, type Response}
 
@@ -41,7 +41,7 @@ pub fn require_user(
 ) -> Response {
   case bearer_token(req) {
     Ok(token) ->
-      case db.find_user_by_token(db, token) {
+      case sessions.find_user_by_token(db, token) {
         Ok(user) -> next(user)
         Error(_) -> wisp.response(401)
       }
