@@ -1,10 +1,3 @@
-// Reconnecting websocket with exponential backoff + jitter.
-//
-// - Live drops (socket had opened, then closed) retry forever with backoff.
-// - Repeated handshake failures (closed before ever opening) are how an
-//   expired token *or* a down server look from JS — indistinguishable here.
-//   After a few, we give up and call `onGiveUp`, letting the app adjudicate
-//   over HTTP (401 vs network error).
 export function connect(url, onMessage, onGiveUp) {
   const baseDelay = 500;
   const maxDelay = 15000;
@@ -36,11 +29,9 @@ export function connect(url, onMessage, onGiveUp) {
     ws.addEventListener("close", () => {
       if (stopped) return;
       if (opened) {
-        // A live connection dropped — reset and retry quickly.
         attempt = 0;
         schedule();
       } else {
-        // Never connected: auth reject or server unreachable.
         handshakeFails += 1;
         if (handshakeFails >= maxHandshakeFails) {
           stopped = true;
