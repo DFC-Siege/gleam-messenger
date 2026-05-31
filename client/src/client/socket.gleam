@@ -13,5 +13,7 @@ pub fn listen(
   on_give_up: msg,
 ) -> Effect(msg) {
   use dispatch <- effect.from
-  connect(url, fn(text) { dispatch(to_msg(text)) }, fn() { dispatch(on_give_up) })
+  connect(url, fn(text) { dispatch(to_msg(text)) }, fn() {
+    dispatch(on_give_up)
+  })
 }

@@ -190,11 +190,13 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       effect.none(),
     )
 
-    // The socket couldn't reconnect. Ask HTTP why: a 401 means our token is
-    // dead (log out), anything else is a connectivity problem (just report it).
     SocketGaveUp -> #(
       model,
-      api.get(me_url, token(model), rsvp.expect_json(user.decoder(), AuthRechecked)),
+      api.get(
+        me_url,
+        token(model),
+        rsvp.expect_json(user.decoder(), AuthRechecked),
+      ),
     )
 
     AuthRechecked(Error(rsvp.HttpError(response))) if response.status == 401 ->

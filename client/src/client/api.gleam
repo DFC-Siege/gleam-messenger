@@ -17,7 +17,11 @@ pub fn post(
   send(http.Post, url, token, json.to_string(body), handler)
 }
 
-pub fn delete(url: String, token: String, handler: Handler(msg)) -> Effect(msg) {
+pub fn delete(
+  url: String,
+  token: String,
+  handler: Handler(msg),
+) -> Effect(msg) {
   send(http.Delete, url, token, "", handler)
 }
 

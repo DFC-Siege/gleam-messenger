@@ -30,10 +30,6 @@ pub fn handle(
           let client = process.new_subject()
           hub.subscribe(hub, client)
 
-          // Listen for hub broadcasts, and monitor the hub so that if it
-          // crashes we close this socket (the client then reconnects and
-          // re-subscribes to the restarted hub). Monitoring is one-way: this
-          // process dying never affects the hub.
           let selector =
             process.new_selector()
             |> process.select_map(client, Broadcast)
@@ -63,7 +59,8 @@ pub fn handle(
           }
         },
       )
-    False -> response.new(401) |> response.set_body(mist.Bytes(bytes_tree.new()))
+    False ->
+      response.new(401) |> response.set_body(mist.Bytes(bytes_tree.new()))
   }
 }
 

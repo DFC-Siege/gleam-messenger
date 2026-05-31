@@ -45,12 +45,15 @@ fn auth_form(model: Model, route: Route) -> Element(Msg) {
   shell([
     card.card([class("w-full max-w-sm")], [
       card.title(title),
-      html.form([class("flex flex-col gap-3"), event.on_submit(fn(_) { submit })], [
-        field("Username", "text", model.username_input, UpdatedUsername),
-        field("Password", "password", model.password_input, UpdatedPassword),
-        auth_error(model),
-        button.primary([attribute.type_("submit"), class("w-full")], cta),
-      ]),
+      html.form(
+        [class("flex flex-col gap-3"), event.on_submit(fn(_) { submit })],
+        [
+          field("Username", "text", model.username_input, UpdatedUsername),
+          field("Password", "password", model.password_input, UpdatedPassword),
+          auth_error(model),
+          button.primary([attribute.type_("submit"), class("w-full")], cta),
+        ],
+      ),
       switch_link(registering),
     ]),
   ])
@@ -77,7 +80,8 @@ fn field(
 
 fn auth_error(model: Model) -> Element(Msg) {
   case model.auth_error {
-    Some(reason) -> html.p([class("text-danger-400 text-sm")], [html.text(reason)])
+    Some(reason) ->
+      html.p([class("text-danger-400 text-sm")], [html.text(reason)])
     None -> element.none()
   }
 }
@@ -127,30 +131,27 @@ fn bubble(msg: Message, session: Session) -> Element(Msg) {
     False -> []
   }
   card.card([], [
-    html.div(
-      [class("flex items-start justify-between gap-2")],
-      [html.p([class("text-primary-400 font-semibold")], [html.text(msg.sender)]), ..actions],
-    ),
+    html.div([class("flex items-start justify-between gap-2")], [
+      html.p([class("text-primary-400 font-semibold")], [html.text(msg.sender)]),
+      ..actions
+    ]),
     html.p([], [html.text(msg.body)]),
   ])
 }
 
 fn composer(model: Model) -> Element(Msg) {
-  html.form(
-    [class("flex gap-2"), event.on_submit(fn(_) { SubmittedDraft })],
-    [
-      html.input([
-        class(
-          "flex-1 rounded-2xl bg-surface-800 px-4 py-2 text-surface-50 "
-          <> "placeholder:text-surface-400 focus:outline-none",
-        ),
-        attribute.value(model.draft),
-        attribute.placeholder("Type a message…"),
-        event.on_input(UpdatedDraft),
-      ]),
-      button.primary([attribute.type_("submit")], "Send"),
-    ],
-  )
+  html.form([class("flex gap-2"), event.on_submit(fn(_) { SubmittedDraft })], [
+    html.input([
+      class(
+        "flex-1 rounded-2xl bg-surface-800 px-4 py-2 text-surface-50 "
+        <> "placeholder:text-surface-400 focus:outline-none",
+      ),
+      attribute.value(model.draft),
+      attribute.placeholder("Type a message…"),
+      event.on_input(UpdatedDraft),
+    ]),
+    button.primary([attribute.type_("submit")], "Send"),
+  ])
 }
 
 fn error(model: Model) -> Element(Msg) {
