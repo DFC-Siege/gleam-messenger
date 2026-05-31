@@ -8,7 +8,10 @@ pub type Error {
   PasswordTooLong
 }
 
-pub fn validate(username: String, password: String) -> Result(Nil, List(Error)) {
+pub fn validate(
+  username: String,
+  password: String,
+) -> Result(Nil, List(Error)) {
   let errors =
     []
     |> check(string.length(username) >= 3, UsernameTooShort)
