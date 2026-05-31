@@ -10,6 +10,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [shared, server, client]
+    defaults:
+      run:
+        working-directory: ${{ matrix.project }}
     steps:
       - uses: actions/checkout@v6
       - uses: erlef/setup-beam@v1
@@ -17,7 +24,7 @@ jobs:
           otp-version: "28"
           gleam-version: "1.16.0"
           rebar3-version: "3"
-          # elixir-version: "1"
+      - run: if [ -f scripts/gen-env.mjs ]; then node scripts/gen-env.mjs; fi
       - run: gleam deps download
-      - run: gleam test
-      - run: gleam format --check src test
+      - run: if [ -d test ]; then gleam test; else gleam check; fi
+      - run: gleam format --check src $([ -d test ] && echo test)
