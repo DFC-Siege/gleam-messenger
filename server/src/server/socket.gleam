@@ -12,6 +12,11 @@ import server/db
 import server/hub.{type Hub}
 import shared/event
 
+type Incoming {
+  Broadcast(event.Event)
+  HubDown
+}
+
 pub fn handle(
   req: Request(Connection),
   database: pog.Connection,
@@ -24,17 +29,35 @@ pub fn handle(
         on_init: fn(_conn) {
           let client = process.new_subject()
           hub.subscribe(hub, client)
-          let selector = process.new_selector() |> process.select(client)
+
+          // Listen for hub broadcasts, and monitor the hub so that if it
+          // crashes we close this socket (the client then reconnects and
+          // re-subscribes to the restarted hub). Monitoring is one-way: this
+          // process dying never affects the hub.
+          let selector =
+            process.new_selector()
+            |> process.select_map(client, Broadcast)
+          let selector = case process.subject_owner(hub) {
+            Ok(pid) ->
+              process.select_specific_monitor(
+                selector,
+                process.monitor(pid),
+                fn(_) { HubDown },
+              )
+            Error(_) -> selector
+          }
+
           #(client, Some(selector))
         },
         on_close: fn(client) { hub.unsubscribe(hub, client) },
         handler: fn(client, ws_message, conn) {
           case ws_message {
-            mist.Custom(evt) -> {
+            mist.Custom(Broadcast(evt)) -> {
               let _ =
                 mist.send_text_frame(conn, json.to_string(event.to_json(evt)))
               mist.continue(client)
             }
+            mist.Custom(HubDown) -> mist.stop()
             mist.Closed | mist.Shutdown -> mist.stop()
             _ -> mist.continue(client)
           }

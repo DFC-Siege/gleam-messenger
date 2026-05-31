@@ -60,6 +60,8 @@ pub type Msg {
   ApiCreatedMessage(Result(Message, rsvp.Error))
   ApiDeletedMessage(Result(Nil, rsvp.Error))
   ServerPushedEvent(String)
+  SocketGaveUp
+  AuthRechecked(Result(User, rsvp.Error))
   UpdatedDraft(String)
   SubmittedDraft
   ClickedDelete(Int)
@@ -188,6 +190,21 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       effect.none(),
     )
 
+    // The socket couldn't reconnect. Ask HTTP why: a 401 means our token is
+    // dead (log out), anything else is a connectivity problem (just report it).
+    SocketGaveUp -> #(
+      model,
+      api.get(me_url, token(model), rsvp.expect_json(user.decoder(), AuthRechecked)),
+    )
+
+    AuthRechecked(Error(rsvp.HttpError(response))) if response.status == 401 ->
+      expire(model)
+
+    AuthRechecked(_) -> #(
+      Model(..model, error: Some("Lost connection — reload to reconnect")),
+      effect.none(),
+    )
+
     UpdatedDraft(draft) -> #(Model(..model, draft:), effect.none())
 
     SubmittedDraft ->
@@ -207,6 +224,21 @@ fn token(model: Model) -> String {
   }
 }
 
+fn expire(model: Model) -> #(Model, Effect(Msg)) {
+  #(
+    Model(
+      ..model,
+      session: None,
+      messages: [],
+      auth_error: Some("Session expired — please log in again"),
+    ),
+    effect.batch([
+      auth.forget_token(),
+      modem.push(router.to_path(Login), None, None),
+    ]),
+  )
+}
+
 fn authenticate(url: String, model: Model) -> Effect(Msg) {
   let body =
     json.object([
@@ -223,7 +255,7 @@ fn enter_chat(token: String) -> Effect(Msg) {
       token,
       rsvp.expect_json(decode.list(message.decoder()), ApiReturnedMessages),
     ),
-    socket.listen(ws_base <> token, ServerPushedEvent),
+    socket.listen(ws_base <> token, ServerPushedEvent, SocketGaveUp),
   ])
 }
 

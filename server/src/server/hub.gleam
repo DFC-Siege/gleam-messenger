@@ -11,6 +11,12 @@ pub opaque type Op {
   Subscribe(client: Subject(Event))
   Unsubscribe(client: Subject(Event))
   Publish(event: Event)
+  Crash
+}
+
+// Debug-only: deliberately crash the hub to test supervisor restart.
+pub fn crash(hub: Hub) -> Nil {
+  process.send(hub, Crash)
 }
 
 pub fn supervised(name: Name(Op)) -> supervision.ChildSpecification(Hub) {
@@ -46,5 +52,6 @@ fn handle(
       list.each(clients, fn(client) { process.send(client, event) })
       actor.continue(clients)
     }
+    Crash -> panic as "intentional hub crash for testing"
   }
 }

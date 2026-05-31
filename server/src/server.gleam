@@ -38,7 +38,12 @@ pub fn main() {
     supervisor.new(supervisor.OneForOne)
     |> supervisor.add(pog.supervised(db.config(db_name)))
     |> supervisor.add(hub.supervised(hub_name))
-    |> supervisor.add(handler |> mist.new |> mist.port(8000) |> mist.supervised)
+    |> supervisor.add(
+      handler
+      |> mist.new
+      |> mist.port(8000)
+      |> mist.supervised,
+    )
     |> supervisor.start
 
   process.sleep_forever()

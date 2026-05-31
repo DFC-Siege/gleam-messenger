@@ -32,6 +32,10 @@ fn handle(ctx: Context, req: Request) -> Response {
     ["api", "me"] -> me(ctx, req)
     ["api", "messages"] -> messages(ctx, req)
     ["api", "messages", id] -> message(ctx, req, id)
+    ["api", "crash"] -> {
+      hub.crash(ctx.hub)
+      wisp.response(204)
+    }
     _ -> wisp.not_found()
   }
 }
