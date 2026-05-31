@@ -3,9 +3,10 @@ import gleam/http/request
 import gleam/otp/static_supervisor as supervisor
 import mist
 import pog
+import server/context.{Context}
 import server/db
 import server/hub
-import server/router.{Context}
+import server/router
 import server/socket
 import wisp
 import wisp/wisp_mist
