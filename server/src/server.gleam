@@ -6,8 +6,8 @@ import pog
 import server/context.{Context}
 import server/db
 import server/hub
+import server/live
 import server/router
-import server/socket
 import wisp
 import wisp/wisp_mist
 
@@ -23,14 +23,11 @@ pub fn main() {
   let ctx = Context(db: conn, hub: broadcaster)
 
   let wisp_handler =
-    wisp_mist.handler(
-      fn(req) { router.handle_request(ctx, req) },
-      secret_key_base,
-    )
+    wisp_mist.handler(fn(req) { router.handle_request(req) }, secret_key_base)
 
   let handler = fn(req) {
     case request.path_segments(req) {
-      ["ws"] -> socket.handle(req, conn, broadcaster)
+      ["ws"] -> live.handle(req, ctx)
       _ -> wisp_handler(req)
     }
   }

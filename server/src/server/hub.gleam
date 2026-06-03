@@ -49,9 +49,19 @@ fn handle(
     Unsubscribe(client) ->
       actor.continue(list.filter(clients, fn(c) { c != client }))
     Publish(event) -> {
-      list.each(clients, fn(client) { process.send(client, event) })
-      actor.continue(clients)
+      // Drop clients whose owning process has died (e.g. a server component
+      // whose WebSocket closed) so the subscriber list stays bounded.
+      let alive = list.filter(clients, is_alive)
+      list.each(alive, fn(client) { process.send(client, event) })
+      actor.continue(alive)
     }
     Crash -> panic as "intentional hub crash for testing"
+  }
+}
+
+fn is_alive(client: Subject(Event)) -> Bool {
+  case process.subject_owner(client) {
+    Ok(pid) -> process.is_alive(pid)
+    Error(_) -> False
   }
 }

@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [shared, server, client]
+        project: [shared, server]
     defaults:
       run:
         working-directory: ${{ matrix.project }}
@@ -42,8 +42,6 @@ jobs:
           otp-version: "28"
           gleam-version: "1.16.0"
           rebar3-version: "3"
-      # Some projects generate gitignored modules (client's env.gleam from .env).
-      - run: if [ -f scripts/gen-env.mjs ]; then node scripts/gen-env.mjs; fi
       - run: gleam deps download
       # server: apply migrations (creates the schema) then verify the committed
       # squirrel output matches the .sql files against that schema.
