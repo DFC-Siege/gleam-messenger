@@ -40,7 +40,7 @@ pub fn chat_empty_draft_is_noop_test() {
 
 pub fn chat_server_push_adds_message_test() {
   let incoming = Message(id: 1, user_id: 1, sender: "joe", body: "hi")
-  let raw = json.to_string(event.to_json(event.Created(incoming)))
+  let raw = json.to_string(event.to_json(event.MessageCreated(incoming)))
 
   let #(model, _effect, out) = chat.update(chat.init(), chat.ServerPushed(raw))
 
@@ -51,7 +51,7 @@ pub fn chat_server_push_adds_message_test() {
 pub fn chat_server_push_removes_message_test() {
   let existing = Message(id: 1, user_id: 1, sender: "joe", body: "hi")
   let start = chat.Model(..chat.init(), messages: [existing])
-  let raw = json.to_string(event.to_json(event.Deleted(1)))
+  let raw = json.to_string(event.to_json(event.MessageDeleted(1)))
 
   let #(model, _effect, out) = chat.update(start, chat.ServerPushed(raw))
 

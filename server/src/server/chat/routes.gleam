@@ -27,7 +27,7 @@ pub fn single(ctx: Context, req: Request, id: String) -> Response {
       case messages.author(ctx.db, id) {
         Ok(author_id) if author_id == user.id -> {
           messages.delete(ctx.db, id)
-          hub.publish(ctx.hub, event.Deleted(id))
+          hub.publish(ctx.hub, event.MessageDeleted(id))
           wisp.response(204)
         }
         Ok(_) -> wisp.response(403)
@@ -52,7 +52,7 @@ fn create_message(ctx: Context, req: Request) -> Response {
   case decode.run(body, body_decoder()) {
     Ok(text) -> {
       let created = messages.insert(ctx.db, user.id, text)
-      hub.publish(ctx.hub, event.Created(created))
+      hub.publish(ctx.hub, event.MessageCreated(created))
 
       created
       |> message.to_json

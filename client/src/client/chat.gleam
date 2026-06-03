@@ -9,7 +9,7 @@ import gleam/option.{type Option, None, Some}
 import gleam/string
 import lustre/effect.{type Effect}
 import rsvp
-import shared/event.{Created, Deleted}
+import shared/event.{MessageCreated, MessageDeleted}
 import shared/message.{type Message}
 
 const base_url = env.api_base
@@ -87,12 +87,12 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg), Out) {
 
     ServerPushed(raw) ->
       case json.parse(raw, event.decoder()) {
-        Ok(Created(message)) -> #(
+        Ok(MessageCreated(message)) -> #(
           Model(..model, messages: upsert(model.messages, message)),
           effect.none(),
           Nothing,
         )
-        Ok(Deleted(id)) -> #(
+        Ok(MessageDeleted(id)) -> #(
           Model(..model, messages: remove(model.messages, id)),
           effect.none(),
           Nothing,

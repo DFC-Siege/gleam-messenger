@@ -3,33 +3,36 @@ import gleam/json.{type Json}
 import shared/message.{type Message}
 
 pub type Event {
-  Created(message: Message)
-  Deleted(id: Int)
+  MessageCreated(message: Message)
+  MessageDeleted(id: Int)
 }
 
 pub fn to_json(event: Event) -> Json {
   case event {
-    Created(message) ->
+    MessageCreated(message) ->
       json.object([
-        #("type", json.string("created")),
+        #("type", json.string("message_created")),
         #("message", message.to_json(message)),
       ])
-    Deleted(id) ->
-      json.object([#("type", json.string("deleted")), #("id", json.int(id))])
+    MessageDeleted(id) ->
+      json.object([
+        #("type", json.string("message_deleted")),
+        #("id", json.int(id)),
+      ])
   }
 }
 
 pub fn decoder() -> decode.Decoder(Event) {
   use tag <- decode.field("type", decode.string)
   case tag {
-    "created" -> {
+    "message_created" -> {
       use message <- decode.field("message", message.decoder())
-      decode.success(Created(message))
+      decode.success(MessageCreated(message))
     }
-    "deleted" -> {
+    "message_deleted" -> {
       use id <- decode.field("id", decode.int)
-      decode.success(Deleted(id))
+      decode.success(MessageDeleted(id))
     }
-    _ -> decode.failure(Deleted(0), "Event")
+    _ -> decode.failure(MessageDeleted(0), "Event")
   }
 }
