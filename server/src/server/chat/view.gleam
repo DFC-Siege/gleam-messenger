@@ -4,15 +4,15 @@ import lustre/attribute.{class}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
-import server/app/state.{
+import server/chat.{
   type Model, type Msg, ClickedDelete, ClickedLogout, SubmittedDraft,
   UpdatedDraft,
 }
+import server/message.{type Message}
 import server/ui/button
 import server/ui/card
 import server/ui/layout
-import shared/message.{type Message}
-import shared/user.{type User}
+import server/user.{type User}
 
 pub fn view(model: Model, user: User) -> Element(Msg) {
   layout.shell([
@@ -68,7 +68,7 @@ fn composer(model: Model) -> Element(Msg) {
 }
 
 fn error(model: Model) -> Element(Msg) {
-  case model.chat_error {
+  case model.error {
     Some(reason) -> html.p([class("text-danger-400")], [html.text(reason)])
     None -> element.none()
   }

@@ -2,7 +2,7 @@ import gleam/erlang/process.{type Name, type Subject}
 import gleam/list
 import gleam/otp/actor
 import gleam/otp/supervision
-import shared/event.{type Event}
+import server/event.{type Event}
 
 pub type Hub =
   Subject(Op)
@@ -11,12 +11,6 @@ pub opaque type Op {
   Subscribe(client: Subject(Event))
   Unsubscribe(client: Subject(Event))
   Publish(event: Event)
-  Crash
-}
-
-// Debug-only: deliberately crash the hub to test supervisor restart.
-pub fn crash(hub: Hub) -> Nil {
-  process.send(hub, Crash)
 }
 
 pub fn supervised(name: Name(Op)) -> supervision.ChildSpecification(Hub) {
@@ -55,7 +49,6 @@ fn handle(
       list.each(alive, fn(client) { process.send(client, event) })
       actor.continue(alive)
     }
-    Crash -> panic as "intentional hub crash for testing"
   }
 }
 

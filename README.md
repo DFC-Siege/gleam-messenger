@@ -12,31 +12,37 @@ Backed by wisp/mist, Postgres for storage, and account auth (argon2id passwords
 ## Layout
 
 ```
-shared/   target-agnostic — Message/User/Event types + credential validation
-server/   erlang target    — wisp + mist, pog (Postgres), the Lustre server component
-compose.yaml                — Postgres for local dev
+server/      everything — wisp + mist, pog (Postgres), the Lustre server component
+compose.yaml             — Postgres for local dev
 ```
 
-`shared` holds the types used across the app. The server-side Lustre app lives
-under `server/src/server/`:
+It's a single Gleam project (`server/`). Each module has one job:
 
-- `app.gleam` — the server component (`init`/`update`/`view`). It talks to the
-  DB and the `hub` directly; auth, sending and deleting all happen in `update`.
-- `app/state.gleam` — `Model`/`Msg`/`View` (kept separate so the views and the
-  app can share them without an import cycle).
-- `views/`, `ui/` — the Lustre view functions (target-agnostic).
+- `app.gleam` — composes the two features into the Lustre app
+  (`init`/`update`/`view`); routes messages to `login`/`chat` and tracks the
+  session.
+- `login.gleam` / `login/view.gleam` — the login/register form: its state and
+  update vs. its presentation.
+- `chat.gleam` / `chat/view.gleam` — the chat feature: messages, draft, deletes,
+  and the hub subscription that drives realtime; and its view.
+- `message`/`user`/`event`/`credentials`/`session` — the domain types and
+  validation.
+- `auth.gleam` — password hashing/verification and token generation.
 - `live.gleam` — bridges a mist WebSocket to a per-connection server-component
   runtime (decodes client messages in, encodes DOM patches out).
 - `page.gleam` — the HTML shell: the Lustre runtime, the
   `<lustre-server-component>` element, and a small script that keeps the session
   token in `localStorage` and feeds it into the connect URL.
 - `router.gleam` — serves the shell and the static CSS. There is no REST API.
-- `hub.gleam` — the pub/sub actor every connected component subscribes to.
+- `hub.gleam` — the pub/sub actor every connected component subscribes to. This
+  is what makes realtime work: each browser has its own component runtime, so a
+  message from one is broadcast through the hub to all the others.
+- `ui/` — small presentational helpers (buttons, cards, layout).
 
 The DB layer uses **pog**, **squirrel** (type-safe queries generated from
 `server/src/server/db/sql/*.sql`), and **cigogne** (migrations in
 `server/priv/migrations/`). The `server/db/{users,sessions,messages}` modules
-map squirrel's rows to the `shared` types.
+map squirrel's rows to the domain types.
 
 ## Running
 

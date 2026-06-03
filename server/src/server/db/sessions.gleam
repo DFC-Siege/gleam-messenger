@@ -1,6 +1,6 @@
 import pog
 import server/db/sql
-import shared/user.{type User, User}
+import server/user.{type User, User}
 
 pub fn create(db: pog.Connection, user_id: Int, token: String) -> Nil {
   let assert Ok(_) = sql.create_session(db, token, user_id)

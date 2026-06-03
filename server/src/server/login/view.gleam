@@ -3,8 +3,8 @@ import lustre/attribute.{class}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
-import server/app/state.{
-  type Model, type Msg, Register, ShowLogin, ShowRegister, SubmittedLogin,
+import server/login.{
+  type Model, type Msg, ShowLogin, ShowRegister, SubmittedLogin,
   SubmittedRegister, UpdatedPassword, UpdatedUsername,
 }
 import server/ui/button
@@ -12,16 +12,15 @@ import server/ui/card
 import server/ui/layout
 
 pub fn view(model: Model) -> Element(Msg) {
-  let registering = model.view == Register
-  let title = case registering {
+  let title = case model.registering {
     True -> "Create account"
     False -> "Welcome back"
   }
-  let submit = case registering {
+  let submit = case model.registering {
     True -> SubmittedRegister
     False -> SubmittedLogin
   }
-  let cta = case registering {
+  let cta = case model.registering {
     True -> "Register"
     False -> "Log in"
   }
@@ -38,7 +37,7 @@ pub fn view(model: Model) -> Element(Msg) {
           button.primary([attribute.type_("submit"), class("w-full")], cta),
         ],
       ),
-      switch_link(registering),
+      switch_link(model.registering),
     ]),
   ])
 }
@@ -63,7 +62,7 @@ fn field(
 }
 
 fn error(model: Model) -> Element(Msg) {
-  case model.auth_error {
+  case model.error {
     Some(reason) ->
       html.p([class("text-danger-400 text-sm")], [html.text(reason)])
     None -> element.none()

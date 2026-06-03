@@ -8,10 +8,10 @@ import gleam/result
 import lustre
 import lustre/server_component
 import mist.{type Connection, type ResponseData}
-import server/app
-import server/app/state.{type Msg, type Session, Flags, Session}
+import server/app.{type Msg, Flags}
 import server/context.{type Context}
 import server/db/sessions
+import server/session.{type Session, Session}
 
 type State {
   State(

@@ -1,7 +1,7 @@
 import gleam/list
 import pog
 import server/db/sql
-import shared/message.{type Message, Message}
+import server/message.{type Message, Message}
 
 pub fn all(db: pog.Connection) -> List(Message) {
   let assert Ok(returned) = sql.all_messages(db)

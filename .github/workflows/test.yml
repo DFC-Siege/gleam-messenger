@@ -10,17 +10,12 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [shared, server]
     defaults:
       run:
-        working-directory: ${{ matrix.project }}
+        working-directory: server
     env:
       DATABASE_URL: postgres://messenger:messenger@localhost:5433/messenger
-    # Postgres for the server's migration + query checks. Started for every
-    # matrix job; shared/client simply don't touch it.
+    # Postgres for the migration + query checks.
     services:
       postgres:
         image: postgres:17-alpine
@@ -43,12 +38,10 @@ jobs:
           gleam-version: "1.16.0"
           rebar3-version: "3"
       - run: gleam deps download
-      # server: apply migrations (creates the schema) then verify the committed
-      # squirrel output matches the .sql files against that schema.
-      - if: matrix.project == 'server'
-        run: gleam run -m cigogne all
-      - if: matrix.project == 'server'
-        run: gleam run -m squirrel check
+      # Apply migrations (creates the schema) then verify the committed squirrel
+      # output matches the .sql files against that schema.
+      - run: gleam run -m cigogne all
+      - run: gleam run -m squirrel check
       # Run the suite where tests exist, otherwise just type-check.
       - run: if [ -d test ]; then gleam test; else gleam check; fi
       - run: gleam format --check src $([ -d test ] && echo test)
