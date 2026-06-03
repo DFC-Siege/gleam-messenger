@@ -9,9 +9,9 @@ import lustre
 import lustre/server_component
 import mist.{type Connection, type ResponseData}
 import server/app.{type Msg, Flags}
-import server/context.{type Context}
-import server/db/sessions
-import server/session.{type Session, Session}
+import server/auth/session.{type Session, Session}
+import server/auth/sessions
+import server/shared/context.{type Context}
 
 type State {
   State(

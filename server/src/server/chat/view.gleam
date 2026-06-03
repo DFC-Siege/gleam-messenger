@@ -4,15 +4,15 @@ import lustre/attribute.{class}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import server/auth/user.{type User}
 import server/chat.{
   type Model, type Msg, ClickedDelete, ClickedLogout, SubmittedDraft,
   UpdatedDraft,
 }
-import server/message.{type Message}
-import server/ui/button
-import server/ui/card
-import server/ui/layout
-import server/user.{type User}
+import server/chat/message.{type Message}
+import server/shared/ui/button
+import server/shared/ui/card
+import server/shared/ui/layout
 
 pub fn view(model: Model, user: User) -> Element(Msg) {
   layout.shell([

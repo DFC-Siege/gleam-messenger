@@ -3,13 +3,13 @@ import lustre/attribute.{class}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
-import server/login.{
+import server/auth.{
   type Model, type Msg, ShowLogin, ShowRegister, SubmittedLogin,
   SubmittedRegister, UpdatedPassword, UpdatedUsername,
 }
-import server/ui/button
-import server/ui/card
-import server/ui/layout
+import server/shared/ui/button
+import server/shared/ui/card
+import server/shared/ui/layout
 
 pub fn view(model: Model) -> Element(Msg) {
   let title = case model.registering {

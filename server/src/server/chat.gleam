@@ -4,12 +4,12 @@ import gleam/option.{type Option, None, Some}
 import gleam/string
 import lustre/effect.{type Effect}
 import lustre/server_component
-import server/context.{type Context}
-import server/db/messages
-import server/event.{type Event, MessageCreated, MessageDeleted}
-import server/hub
-import server/message.{type Message}
-import server/session.{type Session}
+import server/auth/session.{type Session}
+import server/chat/event.{type Event, MessageCreated, MessageDeleted}
+import server/chat/message.{type Message}
+import server/chat/queries as messages
+import server/shared/context.{type Context}
+import server/shared/hub
 
 pub type Model {
   Model(

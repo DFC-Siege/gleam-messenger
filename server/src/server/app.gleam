@@ -4,13 +4,13 @@ import lustre
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/server_component
+import server/auth as login
+import server/auth/session.{type Session}
+import server/auth/sessions
+import server/auth/view as login_view
 import server/chat
 import server/chat/view as chat_view
-import server/context.{type Context}
-import server/db/sessions
-import server/login
-import server/login/view as login_view
-import server/session.{type Session}
+import server/shared/context.{type Context}
 
 /// Arguments handed to the server component when it boots for a connection.
 /// `session` is `Some` when the connection arrived with a valid token.

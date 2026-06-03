@@ -2,7 +2,7 @@ import gleam/erlang/process.{type Name, type Subject}
 import gleam/list
 import gleam/otp/actor
 import gleam/otp/supervision
-import server/event.{type Event}
+import server/chat/event.{type Event}
 
 pub type Hub =
   Subject(Op)

@@ -1,4 +1,4 @@
-import server/page
+import server/shared/web/page
 import wisp.{type Request, type Response}
 
 // Everything the browser needs is either a static asset or the HTML shell that

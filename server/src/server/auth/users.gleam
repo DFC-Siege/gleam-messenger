@@ -1,6 +1,6 @@
 import pog
-import server/db/sql
-import server/user.{type User, User}
+import server/auth/user.{type User, User}
+import server/shared/db/sql
 
 pub fn create(
   db: pog.Connection,
