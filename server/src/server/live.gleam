@@ -20,9 +20,6 @@ type State {
   )
 }
 
-// Bridge a raw WebSocket to a per-connection Lustre server component runtime.
-// Incoming text frames are decoded into runtime messages; outgoing client
-// messages (DOM patches, emitted events) are encoded back to the browser.
 pub fn handle(
   req: Request(Connection),
   ctx: Context,

@@ -43,8 +43,6 @@ fn handle(
     Unsubscribe(client) ->
       actor.continue(list.filter(clients, fn(c) { c != client }))
     Publish(event) -> {
-      // Drop clients whose owning process has died (e.g. a server component
-      // whose WebSocket closed) so the subscriber list stays bounded.
       let alive = list.filter(clients, is_alive)
       list.each(alive, fn(client) { process.send(client, event) })
       actor.continue(alive)
